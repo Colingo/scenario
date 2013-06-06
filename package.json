@@ -41,5 +41,5 @@
       "android-browser/4.2..latest"
     ]
   },
-  "private": true
+  "private": false
 }
