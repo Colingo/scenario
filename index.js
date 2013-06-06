@@ -3,18 +3,24 @@ module.exports = builder
 function builder() {
     var stepPrefix = "    "
 
-    var stepTable = {
-
-    }
+    var scenarioTable = {}
+    var stepTable = {}
 
     var testQueue = []
 
     var scenario = function scenario(name, steps, options) {
-        testQueue.push({
+        if (name in scenarioTable) {
+            throw new Error("Scenario already defined: " + name)
+        }
+
+        var test = {
             name: name,
             options: options,
             steps: steps
-        })
+        }
+
+        scenarioTable[name] = test
+        testQueue.push(test)
     }
 
     scenario.define = define
@@ -26,7 +32,7 @@ function builder() {
 
     function define(name, test) {
         if (name in stepTable) {
-            throw new Error("Test step is already defined")
+            throw new Error("Test step is already defined: " + name)
         }
 
         stepTable[name] = test
@@ -41,8 +47,8 @@ function builder() {
 
         testQueue.forEach(function (test) {
             test.steps.forEach(function (step) {
-                if (!(step.name in stepTable)) {
-                    missing.push(step.name)
+                if (!(step in stepTable)) {
+                    missing.push(step)
                 }
             })
         })
@@ -55,7 +61,10 @@ function builder() {
     // Returns an array of scenario tests
     //
     function build() {
-
+        var missing = validate()
+        if (missing.length > 0) {
+            throw new Error("Missing steps: " + JSON.stringify(missing))
+        }
         return testQueue.map(function (scenario) {
             var tapeSteps = scenario.steps.map(function (step) {
                 var stepFunction = stepTable[step]
