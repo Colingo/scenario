@@ -16,7 +16,7 @@ for a feature.
 var test = require("tape")
 var scenario = require("scenario")()
 
-var feature = require("feature.js")
+var feature = require("example.feature.js")
 
 // Register the scenarios with the test builder
 feature(scenario)
