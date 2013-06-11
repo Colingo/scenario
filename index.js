@@ -89,18 +89,18 @@ function builder() {
             })
 
             return function (test) {
+                var context
+
                 test(scenario.name, function (assert) {
-                    var context = createContext(scenario.options)
-
-                    tapeSteps.forEach(function (step) {
-                        assert.test(stepPrefix + step.name, function (assert) {
-                            step.run(context, assert)
-                        })
-                    })
-
+                    context = createContext(scenario.options)
                     assert.end()
                 })
 
+                tapeSteps.forEach(function (step) {
+                    test(stepPrefix + step.name, function (assert) {
+                        step.run(context, assert)
+                    })
+                })
             }
         })
     }
