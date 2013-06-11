@@ -6,12 +6,12 @@ module.exports = function (scenario) {
         "something happens"
     ])
 
-    scenario.define("I am a user", function (context, assert) {
+    scenario.define(/^I am a user$/, function (context, assert) {
         context.user = "Matt"
         assert.end()
     })
 
-    scenario.define("I want to do things", function (context, assert) {
+    scenario.define(/^I want to do things$/, function (context, assert) {
         context.thing = 1
         context.doThing = function () {
             context.thing += 1
@@ -19,12 +19,12 @@ module.exports = function (scenario) {
         assert.end()
     })
 
-    scenario.define("I do the thing", function (context, assert) {
+    scenario.define(/^I do the thing$/, function (context, assert) {
         context.doThing()
         assert.end()
     })
 
-    scenario.define("something happens", function (context, assert) {
+    scenario.define(/^something happens$/, function (context, assert) {
         assert.equal(context.thing, 2, "The thing happened")
         assert.end()
     })

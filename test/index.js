@@ -44,6 +44,44 @@ test("Valid scenarios", function (assert) {
         assert.end()
     })
 
+    assert.test("Scenario 3 is valid", function (assert) {
+        var scenario = builder()
+
+        feature3(scenario)
+        var scenarios = scenario.scenarios()
+        var steps = scenario.steps()
+        var missing = scenario.validate()
+        var tests = scenario.build()
+
+        assert.deepEqual(scenarios, feature3scenarios)
+        assert.deepEqual(steps, feature3steps)
+        assert.deepEqual(missing, [])
+        assert.equal(tests.length, 1)
+
+        tests[0](assert.test.bind(assert))
+
+        assert.end()
+    })
+
+    assert.test("Scenario 4 is valid", function (assert) {
+        var scenario = builder()
+
+        feature4(scenario)
+        var scenarios = scenario.scenarios()
+        var steps = scenario.steps()
+        var missing = scenario.validate()
+        var tests = scenario.build()
+
+        assert.deepEqual(scenarios, feature4scenarios)
+        assert.deepEqual(steps, feature4steps)
+        assert.deepEqual(missing, [])
+        assert.equal(tests.length, 1)
+
+        tests[0](assert.test.bind(assert))
+
+        assert.end()
+    })
+
     assert.test("Scenario 1 composed with 2 is valid", function (assert) {
         var scenario = builder()
 
@@ -56,6 +94,28 @@ test("Valid scenarios", function (assert) {
 
         assert.deepEqual(scenarios, feature1scenarios.concat(feature2scenarios), "Scenarios are correct")
         assert.deepEqual(steps, feature1steps.concat(feature2steps), "Steps are correct")
+        assert.deepEqual(missing, [], "No steps are missing")
+        assert.equal(tests.length, 2, "The correct number of tests were produced")
+
+        var t = assert.test.bind(assert)
+        tests[0](t)
+        tests[1](t)
+
+        assert.end()
+    })
+
+    assert.test("Scenario 1 composed with 3 is valid", function (assert) {
+        var scenario = builder()
+
+        feature1(scenario)
+        feature3(scenario)
+        var scenarios = scenario.scenarios()
+        var steps = scenario.steps()
+        var missing = scenario.validate()
+        var tests = scenario.build()
+
+        assert.deepEqual(scenarios, feature1scenarios.concat(feature3scenarios), "Scenarios are correct")
+        assert.deepEqual(steps, feature1steps.concat(feature3steps), "Steps are correct")
         assert.deepEqual(missing, [], "No steps are missing")
         assert.equal(tests.length, 2, "The correct number of tests were produced")
 
@@ -91,19 +151,42 @@ test("Duplicate scenarios", function (assert) {
 
 // Duplicate step
 test("Duplicate steps", function (assert) {
-    var scenario = builder()
-    var expected = "Test step is already defined: " + feature1steps[0]
-    var failed = false
 
-    feature1(scenario)
+    assert.test("String steps", function (assert) {
+        var scenario = builder()
+        var expected = "Test step is already defined: " + feature1steps[0]
+        var failed = false
 
-    try {
-        scenario.define(feature1steps[0], function () {})
-    } catch (e) {
-        failed = e.message
-    }
+        feature1(scenario)
 
-    assert.equal(failed, expected, "An exception was thrown on duplicate steps")
+        try {
+            scenario.define(feature1steps[0], function () {})
+        } catch (e) {
+            failed = e.message
+        }
+
+        assert.equal(failed, expected, "An exception was thrown on duplicate steps")
+
+        assert.end()
+    })
+
+    assert.test("Regex steps", function (assert) {
+        var scenario = builder()
+        var expected = "Test step is already defined: " + feature3steps[0]
+        var failed = false
+
+        feature3(scenario)
+
+        try {
+            scenario.define(feature3definedSteps[0], function () {})
+        } catch (e) {
+            failed = e.message
+        }
+
+        assert.equal(failed, expected, "An exception was thrown on duplicate regex steps")
+
+        assert.end()
+    })
 
     assert.end()
 })
@@ -116,6 +199,10 @@ test("Missing steps", function (assert) {
     var failed = false
 
     featureUndefined(scenario)
+
+    scenario.define("Any String", function () {})
+    scenario.define(/^A Regex$/, function () {})
+
     var missing = scenario.validate()
 
     try {
@@ -131,33 +218,33 @@ test("Missing steps", function (assert) {
 
 
 
-// Test data
+// String test data
 
 var feature1scenarios = ["This is a scenario for feature 1"]
 var feature1steps = [
-    "Given that I am ready to test feature 1",
-    "When I test feature 1",
-    "Then feature 1 works"
+    "I am ready to test feature 1",
+    "I test feature 1",
+    "feature 1 works"
 ]
 
 function feature1(scenario) {
 
     scenario("This is a scenario for feature 1", feature1steps)
 
-    scenario.define("Given that I am ready to test feature 1",
+    scenario.define("I am ready to test feature 1",
         function (context, assert) {
             context.feature1ready = true
             assert.end()
         })
 
-    scenario.define("When I test feature 1",
+    scenario.define("I test feature 1",
         function (context, assert) {
             assert.equal(context.feature1ready, true)
             context.feature1done = true
             assert.end()
         })
 
-    scenario.define("Then feature 1 works",
+    scenario.define("feature 1 works",
         function (context, assert) {
             assert.equal(context.feature1done, true)
             assert.end()
@@ -166,29 +253,29 @@ function feature1(scenario) {
 
 var feature2scenarios = ["This is a scenario for feature 2"]
 var feature2steps = [
-    "Given that I am ready to test feature 2",
-    "When I test feature 2",
-    "Then feature 2 works"
+    "I am ready to test feature 2",
+    "I test feature 2",
+    "feature 2 works"
 ]
 
 function feature2(scenario) {
 
     scenario("This is a scenario for feature 2", feature2steps)
 
-    scenario.define("Given that I am ready to test feature 2",
+    scenario.define("I am ready to test feature 2",
         function (context, assert) {
             context.feature2ready = true
             assert.end()
         })
 
-    scenario.define("When I test feature 2",
+    scenario.define("I test feature 2",
         function (context, assert) {
             assert.equal(context.feature2ready, true)
             context.feature2done = true
             assert.end()
         })
 
-    scenario.define("Then feature 2 works",
+    scenario.define("feature 2 works",
         function (context, assert) {
             assert.equal(context.feature2done, true)
             assert.end()
@@ -196,9 +283,82 @@ function feature2(scenario) {
 }
 
 var undefinedScenarios = ["This is a scenario for undefined features"]
-var undefineSteps = ["Given that there are three cats in the garden"]
+var undefineSteps = ["there are three cats in the garden"]
 function featureUndefined(scenario) {
     scenario("This is a scenario for undefined features", [
-            "Given that there are three cats in the garden"
+            "there are three cats in the garden"
         ])
+}
+
+/* RegExp test data */
+var feature3scenarios = ["This is a scenario for feature 3"]
+var feature3steps = [
+    "I am ready to test feature 3",
+    "I test feature 3",
+    "feature 3 works"
+]
+var feature3definedSteps = [
+    /^I am ready to test feature 3$/,
+    /^I test feature 3$/,
+    /^feature 3 works$/
+]
+
+function feature3(scenario) {
+
+    scenario("This is a scenario for feature 3", feature3steps)
+
+    scenario.define(/^I am ready to test feature 3/,
+        function (context, assert) {
+            context.feature3ready = true
+            assert.end()
+        })
+
+    scenario.define(/^I test feature 3$/,
+        function (context, assert) {
+            assert.equal(context.feature3ready, true)
+            context.feature3done = true
+            assert.end()
+        })
+
+    scenario.define(/^feature 3 works$/,
+        function (context, assert) {
+            assert.equal(context.feature3done, true)
+            assert.end()
+        })
+}
+
+var feature4scenarios = ["This is a scenario for feature 4"]
+var feature4steps = [
+    "I am ready to test feature 4",
+    "I test feature 4",
+    "feature 4 works"
+]
+var feature4definedSteps = [
+    /^I am ready to test feature 4$/,
+    /^I test feature 4$/,
+    /^feature 4 works$/
+]
+
+function feature4(scenario) {
+
+    scenario("This is a scenario for feature 4", feature4steps)
+
+    scenario.define(/^I am ready to test feature 4/,
+        function (context, assert) {
+            context.feature4ready = true
+            assert.end()
+        })
+
+    scenario.define(/^I test feature 4$/,
+        function (context, assert) {
+            assert.equal(context.feature4ready, true)
+            context.feature4done = true
+            assert.end()
+        })
+
+    scenario.define(/^feature 4 works$/,
+        function (context, assert) {
+            assert.equal(context.feature4done, true)
+            assert.end()
+        })
 }

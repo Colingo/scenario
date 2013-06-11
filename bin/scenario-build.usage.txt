@@ -1,0 +1,20 @@
+Usage:
+
+  scenario-build [-s] <files>
+
+    Parses a collection of feature files and outputs the definition of the
+        scenarios in the scenario format for running with tape. Files are
+        described with glob patterns
+    Options:
+        -s      Output scaffolding for the step definition scripts
+
+
+    Output scenarios:
+
+        scenario-build ./features/*.feature
+
+
+
+    scenario-build -s ./features/*feature
+
+

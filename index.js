@@ -31,11 +31,23 @@ function builder() {
     return scenario
 
     function define(name, test) {
-        if (name in stepTable) {
-            throw new Error("Test step is already defined: " + name)
-        }
+        if (typeof name === "string") {
+            if (name in stepTable) {
+                throw new Error("Test step is already defined: " + name)
+            }
 
-        stepTable[name] = test
+            stepTable[name] = test
+        } else if (isRegex(name)) {
+            testQueue.forEach(function (scenario) {
+                scenario.steps.forEach(function (stepName) {
+                    if (name.test(stepName)) {
+                        define(stepName, test)
+                    }
+                })
+            })
+        } else {
+            throw new Error("Invalid step definition: " + name)
+        }
     }
 
     // Validate that each step exists in the steps table
@@ -47,7 +59,7 @@ function builder() {
 
         testQueue.forEach(function (test) {
             test.steps.forEach(function (step) {
-                if (!(step in stepTable)) {
+                if (typeof stepTable[step] !== "function") {
                     missing.push(step)
                 }
             })
@@ -62,9 +74,11 @@ function builder() {
     //
     function build() {
         var missing = validate()
+
         if (missing.length > 0) {
             throw new Error("Missing steps: " + JSON.stringify(missing))
         }
+
         return testQueue.map(function (scenario) {
             var tapeSteps = scenario.steps.map(function (step) {
                 var stepFunction = stepTable[step]
@@ -116,4 +130,8 @@ function builder() {
             return {}
         }
     }
+}
+
+function isRegex(obj) {
+    return obj && Object.prototype.toString.apply(obj) === "[object RegExp]"
 }
