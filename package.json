@@ -2,7 +2,12 @@
   "name": "scenario",
   "version": "0.1.0",
   "description": "System test runner based on tape",
-  "keywords": [],
+  "keywords": [
+    "test",
+    "tape",
+    "gherkin",
+    "system"
+  ],
   "author": "Matt-Esch <matt@mattesch.info>",
   "repository": "git://github.com/Colingo/scenario.git",
   "main": "index",
@@ -13,7 +18,8 @@
     }
   ],
   "bin": {
-    "scenario": "./bin/runner.js"
+    "scenario": "./bin/scenario.js",
+    "scenario-build": "./bin/scenario.usage.txt"
   },
   "bugs": {
     "url": "https://github.com/Colingo/scenario/issues",
@@ -22,7 +28,8 @@
   "dependencies": {
     "optimist": "~0.5.2",
     "tape": "~1.0.2",
-    "all-files": "~1.0.1"
+    "all-files": "~1.0.1",
+    "glob": "~3.2.1"
   },
   "devDependencies": {
     "tape": "~1.0.2"

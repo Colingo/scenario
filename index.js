@@ -30,18 +30,23 @@ function builder() {
     scenario.build = build
     return scenario
 
-    function define(name, test) {
+    function define(name, test, opt) {
         if (typeof name === "string") {
             if (name in stepTable) {
                 throw new Error("Test step is already defined: " + name)
             }
 
-            stepTable[name] = test
+            stepTable[name] = {
+                test: test,
+                args: Array.isArray(opt) ? opt : []
+            }
+
         } else if (isRegex(name)) {
             testQueue.forEach(function (scenario) {
                 scenario.steps.forEach(function (stepName) {
-                    if (name.test(stepName)) {
-                        define(stepName, test)
+                    var args = stepName.match(name)
+                    if (args && args.length > 0) {
+                        define(stepName, test, args.slice(1))
                     }
                 })
             })
@@ -59,7 +64,8 @@ function builder() {
 
         testQueue.forEach(function (test) {
             test.steps.forEach(function (step) {
-                if (typeof stepTable[step] !== "function") {
+                var stepData = stepTable[step]
+                if (!stepData || typeof stepData.test !== "function") {
                     missing.push(step)
                 }
             })
@@ -81,10 +87,11 @@ function builder() {
 
         return testQueue.map(function (scenario) {
             var tapeSteps = scenario.steps.map(function (step) {
-                var stepFunction = stepTable[step]
+                var stepData = stepTable[step]
                 return {
                     name: step,
-                    run: stepFunction
+                    run: stepData.test,
+                    args: stepData.args
                 }
             })
 
@@ -98,7 +105,8 @@ function builder() {
 
                 tapeSteps.forEach(function (step) {
                     test(stepPrefix + step.name, function (assert) {
-                        step.run(context, assert)
+                        var args = [context, assert].concat(step.args)
+                        step.run.apply(null, args)
                     })
                 })
             }

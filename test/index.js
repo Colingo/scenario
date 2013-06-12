@@ -217,6 +217,26 @@ test("Missing steps", function (assert) {
 })
 
 
+test("Arguments are passed between steps", function (assert) {
+    var scenario = builder()
+
+    feature5(scenario)
+    var scenarios = scenario.scenarios()
+    var steps = scenario.steps()
+    var missing = scenario.validate()
+    var tests = scenario.build()
+
+    assert.deepEqual(scenarios, feature5scenarios, "Scenarios are correct")
+    assert.deepEqual(steps, feature5steps, "Steps are correct")
+    assert.deepEqual(missing, [], "No steps are missing")
+    assert.equal(tests.length, 1, "The correct number of tests were produced")
+
+    tests[0](assert.test.bind(assert))
+
+    assert.end()
+})
+
+
 
 // String test data
 
@@ -359,6 +379,30 @@ function feature4(scenario) {
     scenario.define(/^feature 4 works$/,
         function (context, assert) {
             assert.equal(context.feature4done, true)
+            assert.end()
+        })
+}
+
+var feature5scenarios = ["This is a scenario for feature 5"]
+var feature5steps = [
+    "I test feature 5",
+    "feature 5 works"
+]
+
+function feature5(scenario) {
+
+    scenario("This is a scenario for feature 5", feature5steps)
+
+    scenario.define(/^I ([a-zA-Z]+) feature 5$/,
+        function (context, assert, action) {
+            context.action = action
+            assert.equal(action, "test")
+            assert.end()
+        })
+
+    scenario.define(/^feature 5 works$/,
+        function (context, assert) {
+            assert.equal(context.action, "test")
             assert.end()
         })
 }

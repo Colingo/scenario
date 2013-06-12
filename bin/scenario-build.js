@@ -1,7 +1,9 @@
+#!/usr/bin/env node
+
 var fs = require("fs")
 var glob = require("glob")
 var Lexer = require("gherkin").Lexer("en");
-
+var stringArgs
 
 var scenarios = []
 
@@ -51,18 +53,26 @@ function print(scenario) {
 
 function define(step) {
     console.log("scenario.define(" +
-        quote(step) +
-        ", function (context, assert) {\n\n\n" +
+        regexify(step) +
+        ",\n    function (context, assert) {\n\n\n" +
 
-        "})\n")
+        "    })\n")
 }
 
 function quote(str) {
     return "\"" + str.replace(/\"/g, "\\\"") + "\""
 }
 
+function regexify(str) {
+    return "/^" + str.replace(/\//, "\\") + "$/"
+}
+
 function printHelp() {
-    console.log("LOL")
+    var help = fs.createReadStream(ospath.join(__dirname, "scenario-build.usage.txt"))
+
+    help.on("open", function () {
+        help.pipe(process.stdout)
+    })
 }
 
 function printSteps() {

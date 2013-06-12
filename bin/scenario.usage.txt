@@ -1,0 +1,15 @@
+Usage:
+
+  scenario --path <directory path>
+
+    Initialises a suite of tests built on scenario. Each .js file inside the test
+    directory exports a function with a scenario argument. Each test registers its
+    scenario and definitions with the scenario test runner, and the tests are
+    executed.
+
+  Options
+
+    -p  [--path]   <directory path>      Uses all js files in a directory
+    -c  [--config] <config file path>    Path to a JSON array of files to use
+
+

@@ -14,7 +14,8 @@ Usage:
         scenario-build ./features/*.feature
 
 
+    Output step definition scaffoling:
 
-    scenario-build -s ./features/*feature
+        scenario-build -s ./features/*feature
 
 

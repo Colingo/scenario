@@ -4,9 +4,10 @@ var allFiles = require("all-files")
 var args = require("optimist").argv
 var console = require("console")
 var tape = require("tape")
+var fs = require("fs")
+var ospath = require("path")
 
 var builder = require("../index")
-console.log(args)
 
 var config = args.c || args.config
 var path = args.p || args.path
@@ -18,7 +19,6 @@ if (!(path || config) || (path && config)) {
     if (config) {
         runTests(filesFromConfig(config))
     } else if (args.p || args.path) {
-        console.log(allFiles(path))
         runTests(allFiles(path))
     }
 }
@@ -42,7 +42,7 @@ function filesFromConfig(configPath) {
 
     if (!config.isArray) {
         throw new Error("Config " +
-            configPath +
+            configpath +
             " file is not a valid JSON array")
     }
 
@@ -50,5 +50,9 @@ function filesFromConfig(configPath) {
 }
 
 function printHelp() {
-    console.log("LOL")
+    var help = fs.createReadStream(ospath.join(__dirname, "scenario.usage.txt"))
+
+    help.on("open", function () {
+        help.pipe(process.stdout)
+    })
 }
