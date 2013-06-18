@@ -3,7 +3,7 @@
 var fs = require("fs")
 var glob = require("glob")
 var Lexer = require("gherkin").Lexer("en");
-var stringArgs
+var path = require("path")
 
 var scenarios = []
 
@@ -68,7 +68,7 @@ function regexify(str) {
 }
 
 function printHelp() {
-    var help = fs.createReadStream(ospath.join(__dirname, "scenario-build.usage.txt"))
+    var help = fs.createReadStream(path.join(__dirname, "scenario-build.usage.txt"))
 
     help.on("open", function () {
         help.pipe(process.stdout)
