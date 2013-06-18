@@ -28,7 +28,7 @@
   "dependencies": {
     "optimist": "~0.5.2",
     "tape": "~1.0.2",
-    "all-files": "~1.0.1",
+    "all-files": "~1.0.2",
     "glob": "~3.2.1"
   },
   "devDependencies": {

@@ -4,9 +4,10 @@ module.exports = function (scenario) {
         "I want to do things",
         "I do the thing",
         "something happens"
-    ])
+    ], ["web"])
 
     scenario.define("I am a user", function (context, assert) {
+        assert.equal(context.setup, "The tag worked")
         context.user = "Matt"
         assert.end()
     })

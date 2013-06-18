@@ -8,19 +8,29 @@ function builder() {
 
     var testQueue = []
 
-    var scenario = function scenario(name, steps, options) {
+    var tags = []
+
+    var scenario = function scenario(name, steps, tags) {
         if (name in scenarioTable) {
             throw new Error("Scenario already defined: " + name)
         }
 
         var test = {
             name: name,
-            options: options,
-            steps: steps
+            steps: steps,
+            tags: tags
         }
 
         scenarioTable[name] = test
         testQueue.push(test)
+    }
+
+    scenario.tag = function tag(name, handler) {
+        if (tags.indexOf(name) >= 0) {
+            throw new Error("Tag already defined: " + name)
+        }
+
+        tags[name] = handler
     }
 
     scenario.define = define
@@ -95,11 +105,11 @@ function builder() {
                 }
             })
 
-            return function (test) {
+            function scenarioTest(test) {
                 var context
 
                 test(scenario.name, function (assert) {
-                    context = createContext(scenario.options)
+                    context = createContext(scenario.tags)
                     assert.end()
                 })
 
@@ -110,6 +120,9 @@ function builder() {
                     })
                 })
             }
+
+            scenarioTest.scenario = scenario.name
+            return scenarioTest
         })
     }
 
@@ -129,14 +142,16 @@ function builder() {
     //
     // Returns a new test context
     //
-    function createContext(options) {
-        if (options) {
-            // TODO - add properties to the context based on options
-            return {}
-        } else {
-            // Return clean context
-            return {}
+    function createContext(tagNames) {
+        var context = {}
+
+        if (Array.isArray(tagNames)) {
+            tagNames.forEach(function (tagName) {
+                tags[tagName](context)
+            })
         }
+
+        return context
     }
 }
 
