@@ -34,7 +34,7 @@ tests[0](test)
 function feature(scenario) {
     scenario("As a user I can do something", [
         "I am a user",
-        "I want to do things",
+        "I want to do something",
         "I do the thing",
         "something happens"
     ])
