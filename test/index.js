@@ -160,7 +160,7 @@ test("Duplicate steps", function (assert) {
         feature1(scenario)
 
         try {
-            scenario.define(feature1steps[0], function () {})
+            scenario.define(feature1steps[0], null)
         } catch (e) {
             failed = e.message
         }
@@ -178,7 +178,7 @@ test("Duplicate steps", function (assert) {
         feature3(scenario)
 
         try {
-            scenario.define(feature3definedSteps[0], function () {})
+            scenario.define(feature3definedSteps[0], null)
         } catch (e) {
             failed = e.message
         }
@@ -200,8 +200,8 @@ test("Missing steps", function (assert) {
 
     featureUndefined(scenario)
 
-    scenario.define("Any String", function () {})
-    scenario.define(/^A Regex$/, function () {})
+    scenario.define("Any String", null)
+    scenario.define(/^A Regex$/, null)
 
     var missing = scenario.validate()
 
@@ -212,7 +212,23 @@ test("Missing steps", function (assert) {
     }
 
     assert.deepEqual(missing, undefineSteps)
-    assert.equal(failed, expected, "An exception was thrown on build with missing steps")
+    assert.equal(failed, expected, "Exception thrown on build with missing steps")
+    assert.end()
+})
+
+test("Poorly defined step", function (assert) {
+    var scenario = builder()
+    var expected = "Invalid step definition: undefined"
+
+    var failed = false;
+
+    try {
+        scenario.define(undefined, null)
+    } catch (e) {
+        failed = e.message
+    }
+
+    assert.equal(failed, expected, "Exception thrown on a poorly defined step")
     assert.end()
 })
 
@@ -237,24 +253,66 @@ test("Arguments are passed between steps", function (assert) {
 })
 
 test("Tags work", function (assert) {
-    var scenario = builder()
+    for (var i = 0; i < 4; i += 1) {
+        assert.test("Testing definition order 1", function (assert) {
+            var scenario = builder()
 
-    feature6(scenario)
-    tags(scenario)
-    var scenarios = scenario.scenarios()
-    var steps = scenario.steps()
-    var missing = scenario.validate()
-    var tests = scenario.build()
+            feature6(scenario)
+            tags(scenario, i)
+            var scenarios = scenario.scenarios()
+            var steps = scenario.steps()
+            var missing = scenario.validate()
+            var tests = scenario.build()
 
-    assert.deepEqual(scenarios, feature6scenarios, "Scenarios are correct")
-    assert.deepEqual(steps, feature6steps, "Steps are correct")
-    assert.deepEqual(missing, [], "No steps are missing")
-    assert.equal(tests.length, 1, "The correct number of tests were produced")
+            assert.deepEqual(scenarios, feature6scenarios, "Scenarios are correct")
+            assert.deepEqual(steps, feature6steps, "Steps are correct")
+            assert.deepEqual(missing, [], "No steps are missing")
+            assert.equal(tests.length, 1, "The correct number of tests were produced")
 
-    tests[0](assert.test.bind(assert))
+            tests[0](assert.test.bind(assert))
+
+            assert.end()
+        })
+    }
 
     assert.end()
 })
+
+var methods = ["before", "after", "beforeEach", "afterEach"]
+methods.forEach(function (t) {
+    var worked = false;
+
+    test("Testing " + t + " only", function (assert) {
+        var scenario = builder()
+
+        feature7(scenario)
+        scenario[t]("magic", function (context, assert) {
+            worked = true;
+            assert.end()
+        })
+
+        var scenarios = scenario.scenarios()
+        var steps = scenario.steps()
+        var missing = scenario.validate()
+        var tests = scenario.build()
+
+        assert.deepEqual(scenarios, feature7scenarios, "Scenarios are correct")
+        assert.deepEqual(steps, feature7steps, "Steps are correct")
+        assert.deepEqual(missing, [], "No steps are missing")
+        assert.equal(tests.length, 1, "The correct number of tests were produced")
+
+        tests[0](assert.test.bind(assert))
+
+        assert.end()
+    })
+
+    test("Assert test worked", function (assert) {
+        assert.ok(worked)
+        assert.end()
+    })
+})
+
+
 
 
 
@@ -435,7 +493,7 @@ var feature6steps = [
 
 function feature6(scenario) {
 
-    scenario("This is a scenario for feature 6", feature6steps, ["magic"])
+    scenario("This is a scenario for feature 6", feature6steps, ["magic", "undefined"])
 
     scenario.define(/^I ([a-zA-Z]+) feature 6$/,
         function (context, assert, action) {
@@ -452,31 +510,71 @@ function feature6(scenario) {
         })
 }
 
-function tags(scenario) {
-    scenario.before("magic", function (context, assert) {
-        context.result = "setup data"
-        assert.end()
-    })
+var feature7scenarios = ["This is a scenario for feature 7"]
+var feature7steps = [
+    "I test feature 7",
+    "feature 7 works"
+]
 
-    scenario.beforeEach("magic", function (context, assert) {
-        if ("count" in context) {
-            context.count += 1
-        } else {
-            context.count = 1
-        }
+function feature7(scenario) {
 
-        assert.end()
-    })
+    scenario("This is a scenario for feature 7", feature7steps, ["magic"])
 
-    scenario.afterEach("magic", function (context, assert) {
-        context.count -= 1
-        assert.end()
-    })
+    scenario.define(/^I ([a-zA-Z]+) feature 7$/,
+        function (context, assert, action) {
+            context.action = action
+            assert.equal(action, "test")
+            assert.end()
+        })
 
-
-    scenario.after("magic", function (context, assert) {
-        assert.equal(context.result, "setup data")
-        assert.equal(context.count, 0)
-        assert.end()
-    })
+    scenario.define(/^feature 7 works$/,
+        function (context, assert) {
+            assert.equal(context.action, "test")
+            assert.end()
+        })
 }
+
+var magic = [
+    function magicBefore(scenario) {
+        scenario.before("magic", function (context, assert) {
+            context.result = "setup data"
+            assert.end()
+        })
+    },
+
+    function magicAfter(scenario) {
+        scenario.after("magic", function (context, assert) {
+            assert.equal(context.result, "setup data")
+            assert.equal(context.count, 0)
+            assert.end()
+        })
+    },
+
+    function magicBeforeEach(scenario) {
+        scenario.beforeEach("magic", function (context, assert) {
+            if ("count" in context) {
+                context.count += 1
+            } else {
+                context.count = 1
+            }
+
+            assert.end()
+        })
+    },
+
+    function magicAfterEach(scenario) {
+        scenario.afterEach("magic", function (context, assert) {
+            context.count -= 1
+            assert.end()
+        })
+    }
+]
+
+function tags(scenario, order) {
+    var i, t;
+    for (i = 0; i < magic.length; i += 1) {
+        t = (i + order) % magic.length
+        magic[t](scenario)
+    }
+}
+

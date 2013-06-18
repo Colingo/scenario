@@ -59,8 +59,6 @@ function builder() {
         tags[tag] = tagSetup
     }
 
-    return scenario
-
     function define(name, test, opt) {
         if (typeof name === "string") {
             if (name in stepTable) {
@@ -186,7 +184,7 @@ function builder() {
         return Object.keys(stepTable)
     }
 
-
+    return scenario
 }
 
 // Pull the setup functions from each tag in order
@@ -215,6 +213,7 @@ function createSetup(tags, tagNames) {
                     apply.tagName = tagName
 
                     if (Array.isArray(functions)) {
+                        console.log("Is Array", tags)
                         result[key].push(apply)
                     }
                 })
