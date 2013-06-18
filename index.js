@@ -25,19 +25,40 @@ function builder() {
         testQueue.push(test)
     }
 
-    scenario.tag = function tag(name, handler) {
-        if (tags.indexOf(name) >= 0) {
-            throw new Error("Tag already defined: " + name)
-        }
-
-        tags[name] = handler
-    }
-
     scenario.define = define
     scenario.validate = validate
     scenario.scenarios = scenarios
     scenario.steps = steps
     scenario.build = build
+
+    scenario.before = function (tag, f) {
+        var tagSetup = tags[tag] || {}
+        tagSetup.before = tagSetup.before || []
+        tagSetup.before.push(f)
+        tags[tag] = tagSetup
+    }
+
+    scenario.after = function (tag, f) {
+        var tagSetup = tags[tag] || {}
+        tagSetup.after = tagSetup.after || []
+        tagSetup.after.push(f)
+        tags[tag] = tagSetup
+    }
+
+    scenario.beforeEach = function(tag, f) {
+        var tagSetup = tags[tag] || {}
+        tagSetup.beforeEach = tagSetup.beforeEach || []
+        tagSetup.beforeEach.push(f)
+        tags[tag] = tagSetup
+    }
+
+    scenario.afterEach = function(tag, f) {
+        var tagSetup = tags[tag] || {}
+        tagSetup.afterEach = tagSetup.afterEach || []
+        tagSetup.afterEach.push(f)
+        tags[tag] = tagSetup
+    }
+
     return scenario
 
     function define(name, test, opt) {
@@ -106,17 +127,44 @@ function builder() {
             })
 
             function scenarioTest(test) {
-                var context
+                var context = {}
 
+                var setupFunctions = createSetup(tags, scenario.tags)
+
+                // Execute the scenario setup
                 test(scenario.name, function (assert) {
-                    context = createContext(scenario.tags)
                     assert.end()
                 })
 
+                setupFunctions.before.forEach(function (f) {
+                    test("setup " + f.tagName + " scenario", function (assert) {
+                        f(context, assert)
+                    })
+                })
+
                 tapeSteps.forEach(function (step) {
+                    setupFunctions.beforeEach.forEach(function (f) {
+                        test("setup " + f.tagName + " step", function (assert) {
+                            f(context, assert)
+                        })
+                    })
+
                     test(stepPrefix + step.name, function (assert) {
                         var args = [context, assert].concat(step.args)
                         step.run.apply(null, args)
+                    })
+
+                    setupFunctions.afterEach.forEach(function (f) {
+                        test("teardown " + f.tagName + " step", function (assert) {
+                            f(context, assert)
+                        })
+                    })
+                })
+
+                // Execute the sceario teardown
+                setupFunctions.after.forEach(function (f) {
+                    test("teardown " + f.tagName + " scenario", function (assert) {
+                        f(context, assert)
                     })
                 })
             }
@@ -138,21 +186,43 @@ function builder() {
         return Object.keys(stepTable)
     }
 
-    // Create the context based on a set of option
-    //
-    // Returns a new test context
-    //
-    function createContext(tagNames) {
-        var context = {}
 
-        if (Array.isArray(tagNames)) {
-            tagNames.forEach(function (tagName) {
-                tags[tagName](context)
-            })
-        }
+}
 
-        return context
+// Pull the setup functions from each tag in order
+//
+function createSetup(tags, tagNames) {
+    var result = {
+        before: [],
+        after: [],
+        beforeEach: [],
+        afterEach: []
     }
+
+    if (Array.isArray(tagNames)) {
+        tagNames.forEach(function (tagName) {
+            var tag = tags[tagName]
+            if (tag) {
+                Object.keys(result).forEach(function (key) {
+                    var functions = tag[key]
+
+                    function apply(context, assert) {
+                        functions.forEach(function (f) {
+                            f(context, assert)
+                        })
+                    }
+
+                    apply.tagName = tagName
+
+                    if (Array.isArray(functions)) {
+                        result[key].push(apply)
+                    }
+                })
+            }
+        })
+    }
+
+    return result
 }
 
 function isRegex(obj) {

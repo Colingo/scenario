@@ -55,7 +55,7 @@ function runTests(fileList, singleFile) {
 
 
 function filesFromConfig(configPath) {
-    var config = require(configPath)
+    var config = relquire(configPath)
 
     if (!config.isArray) {
         throw new Error("Config " +

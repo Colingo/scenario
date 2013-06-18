@@ -453,7 +453,30 @@ function feature6(scenario) {
 }
 
 function tags(scenario) {
-    scenario.tag("magic", function (context) {
+    scenario.before("magic", function (context, assert) {
         context.result = "setup data"
+        assert.end()
+    })
+
+    scenario.beforeEach("magic", function (context, assert) {
+        if ("count" in context) {
+            context.count += 1
+        } else {
+            context.count = 1
+        }
+
+        assert.end()
+    })
+
+    scenario.afterEach("magic", function (context, assert) {
+        context.count -= 1
+        assert.end()
+    })
+
+
+    scenario.after("magic", function (context, assert) {
+        assert.equal(context.result, "setup data")
+        assert.equal(context.count, 0)
+        assert.end()
     })
 }
