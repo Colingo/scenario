@@ -19,7 +19,7 @@
   ],
   "bin": {
     "scenario": "./bin/scenario.js",
-    "scenario-build": "./bin/scenario.usage.txt"
+    "scenario-build": "./bin/scenario-build.js"
   },
   "bugs": {
     "url": "https://github.com/Colingo/scenario/issues",
