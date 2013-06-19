@@ -63,7 +63,6 @@ function builder() {
 
         if (typeof name === "string") {
             if (name in stepTable) {
-                console.log(stepTable)
                 throw new Error("Test step is already defined: " + name)
             }
 
@@ -222,7 +221,6 @@ function createSetup(tags, tagNames) {
                     apply.tagName = tagName
 
                     if (Array.isArray(functions)) {
-                        console.log("Is Array", tags)
                         result[key].push(apply)
                     }
                 })
