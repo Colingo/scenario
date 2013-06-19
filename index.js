@@ -60,8 +60,10 @@ function builder() {
     }
 
     function define(name, test, opt) {
+
         if (typeof name === "string") {
             if (name in stepTable) {
+                console.log(stepTable)
                 throw new Error("Test step is already defined: " + name)
             }
 
@@ -71,13 +73,20 @@ function builder() {
             }
 
         } else if (isRegex(name)) {
+            var matched = []
+
             testQueue.forEach(function (scenario) {
                 scenario.steps.forEach(function (stepName) {
                     var args = stepName.match(name)
-                    if (args && args.length > 0) {
-                        define(stepName, test, args.slice(1))
+                    var unique = matched.indexOf(stepName) === -1
+                    if (args && args.length > 0 && unique) {
+                        matched.push(stepName)
                     }
                 })
+            })
+
+            matched.forEach(function (name) {
+                define(name, test, opt)
             })
         } else {
             throw new Error("Invalid step definition: " + name)
