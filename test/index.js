@@ -2,129 +2,124 @@ var test = require("tape")
 
 var builder = require("../index")
 
+test("Scenario 1 is valid", function (assert) {
+    var scenario = builder()
 
-test("Valid scenarios", function (assert) {
+    feature1(scenario)
+    var scenarios = scenario.scenarios()
+    var steps = scenario.steps()
+    var missing = scenario.validate()
+    var tests = scenario.build()
 
-    assert.test("Scenario 1 is valid", function (assert) {
-        var scenario = builder()
+    assert.deepEqual(scenarios, feature1scenarios, "Scenarios are correct")
+    assert.deepEqual(steps, feature1steps, "Steps are correct")
+    assert.deepEqual(missing, [], "No steps are missing")
+    assert.equal(tests.length, 1, "The correct number of tests were produced")
 
-        feature1(scenario)
-        var scenarios = scenario.scenarios()
-        var steps = scenario.steps()
-        var missing = scenario.validate()
-        var tests = scenario.build()
+    tests[0](assert.test.bind(assert))
 
-        assert.deepEqual(scenarios, feature1scenarios, "Scenarios are correct")
-        assert.deepEqual(steps, feature1steps, "Steps are correct")
-        assert.deepEqual(missing, [], "No steps are missing")
-        assert.equal(tests.length, 1, "The correct number of tests were produced")
-
-        tests[0](assert.test.bind(assert))
-
-        assert.end()
-    })
+    assert.end()
+})
 
 
-    assert.test("Scenario 2 is valid", function (assert) {
-        var scenario = builder()
+test("Scenario 2 is valid", function (assert) {
+    var scenario = builder()
 
-        feature2(scenario)
-        var scenarios = scenario.scenarios()
-        var steps = scenario.steps()
-        var missing = scenario.validate()
-        var tests = scenario.build()
+    feature2(scenario)
+    var scenarios = scenario.scenarios()
+    var steps = scenario.steps()
+    var missing = scenario.validate()
+    var tests = scenario.build()
 
-        assert.deepEqual(scenarios, feature2scenarios)
-        assert.deepEqual(steps, feature2steps)
-        assert.deepEqual(missing, [])
-        assert.equal(tests.length, 1)
+    assert.deepEqual(scenarios, feature2scenarios)
+    assert.deepEqual(steps, feature2steps)
+    assert.deepEqual(missing, [])
+    assert.equal(tests.length, 1)
 
-        tests[0](assert.test.bind(assert))
+    tests[0](assert.test.bind(assert))
 
-        assert.end()
-    })
+    assert.end()
+})
 
-    assert.test("Scenario 3 is valid", function (assert) {
-        var scenario = builder()
+test("Scenario 3 is valid", function (assert) {
+    var scenario = builder()
 
-        feature3(scenario)
-        var scenarios = scenario.scenarios()
-        var steps = scenario.steps()
-        var missing = scenario.validate()
-        var tests = scenario.build()
+    feature3(scenario)
+    var scenarios = scenario.scenarios()
+    var tests = scenario.build()
+    var steps = scenario.steps()
+    var missing = scenario.validate()
 
-        assert.deepEqual(scenarios, feature3scenarios)
-        assert.deepEqual(steps, feature3steps)
-        assert.deepEqual(missing, [])
-        assert.equal(tests.length, 1)
+    assert.deepEqual(scenarios, feature3scenarios)
+    assert.deepEqual(steps, feature3steps)
+    assert.deepEqual(missing, [])
+    assert.equal(tests.length, 1)
 
-        tests[0](assert.test.bind(assert))
+    tests[0](assert.test.bind(assert))
 
-        assert.end()
-    })
+    assert.end()
+})
 
-    assert.test("Scenario 4 is valid", function (assert) {
-        var scenario = builder()
+test("Scenario 4 is valid", function (assert) {
+    var scenario = builder()
 
-        feature4(scenario)
-        var scenarios = scenario.scenarios()
-        var steps = scenario.steps()
-        var missing = scenario.validate()
-        var tests = scenario.build()
+    feature4(scenario)
+    var scenarios = scenario.scenarios()
+    var tests = scenario.build()
+    var steps = scenario.steps()
+    var missing = scenario.validate()
 
-        assert.deepEqual(scenarios, feature4scenarios)
-        assert.deepEqual(steps, feature4steps)
-        assert.deepEqual(missing, [])
-        assert.equal(tests.length, 1)
+    assert.deepEqual(scenarios, feature4scenarios)
+    assert.deepEqual(steps, feature4steps)
+    assert.deepEqual(missing, [])
+    assert.equal(tests.length, 1)
 
-        tests[0](assert.test.bind(assert))
+    tests[0](assert.test.bind(assert))
 
-        assert.end()
-    })
+    assert.end()
+})
 
-    assert.test("Scenario 1 composed with 2 is valid", function (assert) {
-        var scenario = builder()
+test("Scenario 1 composed with 2 is valid", function (assert) {
+    var scenario = builder()
 
-        feature1(scenario)
-        feature2(scenario)
-        var scenarios = scenario.scenarios()
-        var steps = scenario.steps()
-        var missing = scenario.validate()
-        var tests = scenario.build()
+    feature1(scenario)
+    feature2(scenario)
+    var scenarios = scenario.scenarios()
+    var steps = scenario.steps()
+    var missing = scenario.validate()
+    var tests = scenario.build()
 
-        assert.deepEqual(scenarios, feature1scenarios.concat(feature2scenarios), "Scenarios are correct")
-        assert.deepEqual(steps, feature1steps.concat(feature2steps), "Steps are correct")
-        assert.deepEqual(missing, [], "No steps are missing")
-        assert.equal(tests.length, 2, "The correct number of tests were produced")
+    assert.deepEqual(scenarios, feature1scenarios.concat(feature2scenarios), "Scenarios are correct")
+    assert.deepEqual(steps, feature1steps.concat(feature2steps), "Steps are correct")
+    assert.deepEqual(missing, [], "No steps are missing")
+    assert.equal(tests.length, 2, "The correct number of tests were produced")
 
-        var t = assert.test.bind(assert)
-        tests[0](t)
-        tests[1](t)
+    var t = assert.test.bind(assert)
+    tests[0](t)
+    tests[1](t)
 
-        assert.end()
-    })
+    assert.end()
+})
 
-    assert.test("Scenario 1 composed with 3 is valid", function (assert) {
-        var scenario = builder()
+test("Scenario 1 composed with 3 is valid", function (assert) {
+    var scenario = builder()
 
-        feature1(scenario)
-        feature3(scenario)
-        var scenarios = scenario.scenarios()
-        var steps = scenario.steps()
-        var missing = scenario.validate()
-        var tests = scenario.build()
+    feature1(scenario)
+    feature3(scenario)
+    var scenarios = scenario.scenarios()
+    scenario.buildRegexp()
+    var steps = scenario.steps()
+    var missing = scenario.validate()
+    var tests = scenario.build()
 
-        assert.deepEqual(scenarios, feature1scenarios.concat(feature3scenarios), "Scenarios are correct")
-        assert.deepEqual(steps, feature1steps.concat(feature3steps), "Steps are correct")
-        assert.deepEqual(missing, [], "No steps are missing")
-        assert.equal(tests.length, 2, "The correct number of tests were produced")
+    assert.deepEqual(scenarios, feature1scenarios.concat(feature3scenarios), "Scenarios are correct")
+    assert.deepEqual(steps, feature1steps.concat(feature3steps), "Steps are correct")
+    assert.deepEqual(missing, [], "No steps are missing")
+    assert.equal(tests.length, 2, "The correct number of tests were produced")
 
-        var t = assert.test.bind(assert)
-        tests[0](t)
-        tests[1](t)
-
-        assert.end()
-    })
+    var t = assert.test.bind(assert)
+    tests[0](t)
+    tests[1](t)
 
     assert.end()
 })

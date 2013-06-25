@@ -5,6 +5,7 @@ function builder() {
 
     var scenarioTable = {}
     var stepTable = {}
+    var regexTable = {}
 
     var testQueue = []
 
@@ -30,6 +31,7 @@ function builder() {
     scenario.scenarios = scenarios
     scenario.steps = steps
     scenario.build = build
+    scenario.buildRegexp = buildRegexp
 
     scenario.before = function (tag, f) {
         var tagSetup = tags[tag] || {}
@@ -72,21 +74,15 @@ function builder() {
             }
 
         } else if (isRegex(name)) {
-            var matched = []
+            if (regexTable[String(name)]) {
+                throw new Error("Test step is already defined: " + name)
+            }
 
-            testQueue.forEach(function (scenario) {
-                scenario.steps.forEach(function (stepName) {
-                    var args = stepName.match(name)
-                    var unique = matched.indexOf(stepName) === -1
-                    if (args && args.length > 0 && unique) {
-                        matched.push(stepName)
-                    }
-                })
-            })
-
-            matched.forEach(function (name) {
-                define(name, test, opt)
-            })
+            regexTable[String(name)] = {
+                test: test,
+                args: Array.isArray(opt) ? opt : [],
+                regex: name
+            }
         } else {
             throw new Error("Invalid step definition: " + name)
         }
@@ -97,10 +93,13 @@ function builder() {
     // Returns a list of missing step defintions
     //
     function validate() {
+        buildRegexp()
+
         var missing = []
 
         testQueue.forEach(function (test) {
             test.steps.forEach(function (step) {
+
                 var stepData = stepTable[step]
                 if (!stepData || typeof stepData.test !== "function") {
                     missing.push(step)
@@ -111,6 +110,30 @@ function builder() {
         return missing
     }
 
+    function buildRegexp() {
+        Object.keys(regexTable).forEach(function (name) {
+            var things = regexTable[name]
+
+            var matched = []
+
+            testQueue.forEach(function (scenario) {
+                scenario.steps.forEach(function (stepName) {
+                    var args = stepName.match(things.regex)
+                    var unique = matched.indexOf(stepName) === -1
+                    if (args && args.length > 0 && unique) {
+                        matched.push(stepName)
+                    }
+                })
+            })
+
+            matched.forEach(function (name) {
+                define(name, things.test, things.args)
+            })
+
+            ;delete regexTable[name]
+        })
+    }
+
     // Turn each step into a callable tape test
     //
     // Returns an array of scenario tests
@@ -119,7 +142,7 @@ function builder() {
         var missing = validate()
 
         if (missing.length > 0) {
-            throw new Error("Missing steps: " + JSON.stringify(missing, null, "    "))
+            throw new Error("Missing steps: " + JSON.stringify(missing))
         }
 
         return testQueue.map(function (scenario) {
