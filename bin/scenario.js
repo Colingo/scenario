@@ -59,7 +59,7 @@ function filesFromConfig(configPath) {
 
     if (!Array.isArray(config)) {
         throw new Error("Config " +
-            configPpath +
+            configPath +
             " file is not a valid JSON array")
     }
 
