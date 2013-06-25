@@ -57,13 +57,17 @@ function runTests(fileList, singleFile) {
 function filesFromConfig(configPath) {
     var config = relquire(configPath)
 
-    if (!config.isArray) {
+    if (!Array.isArray(config)) {
         throw new Error("Config " +
-            configpath +
+            configPath +
             " file is not a valid JSON array")
     }
-
-    return config
+    
+    var configDir = ospath.dirname(configPath)
+    return config.map(function (testFile) {
+        return ospath.join(configDir, testFile)
+    })
+    
 }
 
 function printHelp() {
