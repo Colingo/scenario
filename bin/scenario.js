@@ -57,9 +57,9 @@ function runTests(fileList, singleFile) {
 function filesFromConfig(configPath) {
     var config = relquire(configPath)
 
-    if (!config.isArray) {
+    if (!Array.isArray(config)) {
         throw new Error("Config " +
-            configpath +
+            configPpath +
             " file is not a valid JSON array")
     }
 
