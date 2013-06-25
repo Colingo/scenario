@@ -119,7 +119,7 @@ function builder() {
         var missing = validate()
 
         if (missing.length > 0) {
-            throw new Error("Missing steps: " + JSON.stringify(missing))
+            throw new Error("Missing steps: " + JSON.stringify(missing, null, "    "))
         }
 
         return testQueue.map(function (scenario) {
